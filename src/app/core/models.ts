@@ -10,7 +10,8 @@ export interface Producto {
   id: number; nombre: string; precio: number; categoria: Categoria; estacion: Estacion | null;
   tiempoPreparacionMin: number; sinonimos: string[]; alergenos: string[]; disponible: boolean; activo: boolean;
 }
-export interface Mesa { id: number; numero: number; capacidad: number; estado: EstadoMesa; }
+export interface Zona { id: number; nombre: string; activa: boolean; mesas?: number; capacidad?: number; }
+export interface Mesa { id: number; numero: number; capacidad: number; estado: EstadoMesa; zona: Zona | null; }
 
 export interface LineaRequest { productoId: number; cantidad: number; observacion?: string | null; }
 export interface PedidoRequest {
