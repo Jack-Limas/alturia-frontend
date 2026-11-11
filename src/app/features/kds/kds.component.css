@@ -1,0 +1,30 @@
+/* Diseñado para leerse a 2 metros en un televisor: fuentes grandes y alto contraste. */
+.kds { min-height: 100vh; background: #111; color: #f5f5f5; display: flex; flex-direction: column; font-size: 22px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; background: #1d1d1d; }
+nav { display: flex; gap: .5rem; }
+.pestana { padding: .3rem .9rem; border-radius: 8px; color: #aaa; }
+.pestana.activa { background: #f5c542; color: #111; font-weight: 700; }
+.banda { padding: .5rem 1rem; font-weight: 700; }
+.roja { background: #b3261e; }
+.cola { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: .8rem; padding: .8rem; align-content: start; }
+.pedido { background: #262626; border: 3px solid #3a3a3a; border-radius: 12px; padding: .7rem; }
+.pedido.prep { border-color: #2f7dd1; }
+.pedido.sel { outline: 5px solid #f5c542; }
+.pedido.atrasado { background: #4a1512; border-color: #ff4d40; }
+.cab { display: flex; justify-content: space-between; font-size: 1.4em; }
+.sub { color: #bbb; font-size: .8em; margin-bottom: .3rem; }
+ul { list-style: none; padding: 0; margin: .3rem 0; }
+li { padding: .25rem 0; border-bottom: 1px solid #333; }
+li.nuevo { color: #f5c542; }
+.obs { color: #9fd3ff; font-size: .9em; padding-left: 1.2em; }
+.alergia { background: #ffde59; color: #000; font-weight: 800; padding: .15rem .4rem; border-radius: 6px; margin: .2rem 0; }
+.tag { font-size: .7em; padding: .1rem .4rem; border-radius: 6px; }
+.amarillo { background: #f5c542; color: #111; }
+.atraso { color: #ff8a80; font-weight: 700; }
+.consolidado { padding: 1rem; display: grid; gap: .5rem; max-width: 900px; }
+.fila-cons { display: flex; justify-content: space-between; font-size: 1.6em; border-bottom: 1px solid #333; padding: .3rem 0; }
+.vacio { color: #888; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: grid; place-items: center; }
+.modal > div { background: #ffde59; color: #000; padding: 2rem; border-radius: 16px; text-align: center; }
+.toast { position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%); background: #333; padding: .6rem 1.2rem; border-radius: 10px; }
+footer { padding: .5rem 1rem; background: #1d1d1d; color: #bbb; font-size: .75em; }
