@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService, mensajeError } from '../../core/api.service';
-import { Categoria, Estacion, Mesa, Producto } from '../../core/models';
+import { Categoria, Estacion, Mesa, Producto, Zona } from '../../core/models';
 import { BarraComponent } from '../../shared/barra.component';
 import { MonedaPipe } from '../../shared/moneda.pipe';
 
@@ -22,11 +22,13 @@ export class AdminComponent implements OnInit {
   categorias = signal<Categoria[]>([]);
   estaciones = signal<Estacion[]>([]);
   mesas = signal<Mesa[]>([]);
+  zonas = signal<Zona[]>([]);
   usuarios = signal<{ id: number; nombre: string; usuario: string; rol: string; activo: boolean }[]>([]);
   error = signal<string | null>(null);
   ok = signal<string | null>(null);
   nuevo = { nombre: '', precio: 0, categoriaId: 0, estacionId: 0, tiempoPreparacionMin: 15, sinonimos: '', alergenos: '' };
-  mesaNueva = { numero: 0, capacidad: 4 };
+  zonaNueva = '';
+  mesaNueva = { zonaId: 0, numero: 0, capacidad: 4 };
   usuarioNuevo = { nombre: '', usuario: '', rol: 'MESERO', contrasena: '' };
 
   ngOnInit(): void { this.cargar(); }
@@ -36,6 +38,10 @@ export class AdminComponent implements OnInit {
     this.api.categorias().subscribe(c => this.categorias.set(c));
     this.api.estaciones().subscribe(e => this.estaciones.set(e));
     this.api.mesas().subscribe(m => this.mesas.set(m));
+    this.api.zonas().subscribe(z => {
+      this.zonas.set(z);
+      if (!this.mesaNueva.zonaId && z.length) this.mesaNueva.zonaId = z[0].id;
+    });
     this.api.usuarios().subscribe({ next: u => this.usuarios.set(u), error: () => {} });
   }
 
@@ -49,9 +55,26 @@ export class AdminComponent implements OnInit {
     this.api.disponibilidad(p.id, !p.disponible).subscribe({ next: () => this.cargar(), error: e => this.fallo(e) });
   }
 
-  crearMesa(): void {
-    this.api.crearMesa(this.mesaNueva.numero, this.mesaNueva.capacidad).subscribe({ next: () => { this.exito('Mesa registrada'); this.cargar(); }, error: e => this.fallo(e) });
+  crearZona(): void {
+    if (!this.zonaNueva.trim()) { this.error.set('Escriba el nombre de la zona'); return; }
+    this.api.crearZona(this.zonaNueva).subscribe({
+      next: z => { this.exito(`Zona «${z.nombre}» creada`); this.zonaNueva = ''; this.mesaNueva.zonaId = z.id; this.cargar(); },
+      error: e => this.fallo(e)
+    });
   }
+
+  crearMesa(): void {
+    if (!this.mesaNueva.zonaId) { this.error.set('Primero cree o seleccione una zona'); return; }
+    this.api.crearMesa(this.mesaNueva.numero, this.mesaNueva.capacidad, this.mesaNueva.zonaId)
+      .subscribe({ next: () => { this.exito('Mesa registrada'); this.cargar(); }, error: e => this.fallo(e) });
+  }
+
+  cambiarZona(m: Mesa, zonaId: number): void {
+    this.api.cambiarZonaMesa(m.id, zonaId).subscribe({ next: () => { this.exito(`Mesa ${m.numero} movida de zona`); this.cargar(); }, error: e => this.fallo(e) });
+  }
+
+  mesasDe(z: Zona): Mesa[] { return this.mesas().filter(m => m.zona?.id === z.id); }
+  mesasSinZona(): Mesa[] { return this.mesas().filter(m => !m.zona); }
 
   crearUsuario(): void {
     this.api.crearUsuario(this.usuarioNuevo).subscribe({ next: () => { this.exito('Usuario creado'); this.cargar(); }, error: e => this.fallo(e) });
