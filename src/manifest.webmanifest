@@ -1,0 +1,10 @@
+{
+  "name": "Alturia – Gestión de pedidos",
+  "short_name": "Alturia",
+  "theme_color": "#7a2e1d",
+  "background_color": "#fbf7f2",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./sala",
+  "icons": []
+}
