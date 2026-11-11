@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  ConsolidadoItem, CuentaDto, Interpretacion, LineaRequest, Mesa, PagoDto, PagoRequest, PedidoDto, PedidoRequest, Producto, Sesion,
+  ConsolidadoItem, CuentaDto, Interpretacion, LineaRequest, Mesa, PagoDto, PagoRequest, PedidoDto, PedidoRequest, Producto, Sesion, Zona,
   Categoria, Estacion
 } from './models';
 
@@ -23,7 +23,10 @@ export class ApiService {
   }
 
   mesas(): Observable<Mesa[]> { return this.http.get<Mesa[]>('/api/mesas'); }
-  crearMesa(numero: number, capacidad: number): Observable<Mesa> { return this.http.post<Mesa>('/api/mesas', { numero, capacidad }); }
+  crearMesa(numero: number, capacidad: number, zonaId?: number): Observable<Mesa> { return this.http.post<Mesa>('/api/mesas', { numero, capacidad, zonaId }); }
+  cambiarZonaMesa(mesaId: number, zonaId: number): Observable<Mesa> { return this.http.patch<Mesa>(`/api/mesas/${mesaId}/zona`, null, { params: { zonaId } }); }
+  zonas(): Observable<Zona[]> { return this.http.get<Zona[]>('/api/zonas'); }
+  crearZona(nombre: string): Observable<Zona> { return this.http.post<Zona>('/api/zonas', { nombre }); }
   crearUsuario(u: unknown): Observable<unknown> { return this.http.post('/api/usuarios', u); }
   usuarios(): Observable<{ id: number; nombre: string; usuario: string; rol: string; activo: boolean }[]> {
     return this.http.get<{ id: number; nombre: string; usuario: string; rol: string; activo: boolean }[]>('/api/usuarios');
