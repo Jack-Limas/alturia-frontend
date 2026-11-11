@@ -1,0 +1,33 @@
+/* Paleta Alturia: tonos tierra para sala y caja; alto contraste para el KDS. */
+:root {
+  --fondo: #fbf7f2; --superficie: #ffffff; --texto: #2b2420; --suave: #6f625a; --borde: #e3d9cf;
+  --marca: #7a2e1d; --marca-claro: #f3e4dc; --ok: #2f7d4a; --alerta: #b3261e; --aviso: #c77700; --info: #2457a6;
+  --radio: 12px; --sombra: 0 1px 3px rgba(0,0,0,.08);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--texto); background: var(--fondo);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2, h3 { margin: 0 0 .5rem; line-height: 1.2; }
+button { font: inherit; cursor: pointer; border: 1px solid var(--borde); background: var(--superficie); border-radius: 10px; padding: .6rem 1rem; min-height: 44px; }
+button.primario { background: var(--marca); color: #fff; border-color: var(--marca); }
+button.peligro { background: var(--alerta); color: #fff; border-color: var(--alerta); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+input, select, textarea { font: inherit; padding: .6rem .7rem; border: 1px solid var(--borde); border-radius: 10px; background: #fff; width: 100%; min-height: 44px; }
+label { display: grid; gap: .3rem; font-size: .9rem; color: var(--suave); }
+.tarjeta { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1rem; box-shadow: var(--sombra); }
+.fila { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.grow { flex: 1; }
+.etiqueta { display: inline-block; font-size: .75rem; padding: .15rem .5rem; border-radius: 999px; background: var(--marca-claro); color: var(--marca); font-weight: 600; }
+.etiqueta.alerta { background: #fde7e5; color: var(--alerta); }
+.etiqueta.aviso { background: #fff1d6; color: var(--aviso); }
+.etiqueta.ok { background: #e3f3e8; color: var(--ok); }
+.error { color: var(--alerta); font-weight: 600; }
+.muted { color: var(--suave); }
+.barra { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; background: var(--marca); color: #fff; }
+.barra button { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); min-height: 36px; padding: .3rem .8rem; }
+.contenedor { padding: 1rem; max-width: 1200px; margin: 0 auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .5rem; border-bottom: 1px solid var(--borde); }
+th { font-size: .85rem; color: var(--suave); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
