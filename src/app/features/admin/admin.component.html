@@ -1,0 +1,64 @@
+<app-barra titulo="Administración" />
+<div class="contenedor">
+  <div class="tabs">
+    @for (t of ['productos', 'mesas', 'usuarios', 'reservas', 'reportes']; track t) {
+      <button type="button" [class.primario]="pestana() === t" (click)="pestana.set($any(t))">{{ t[0].toUpperCase() + t.slice(1) }}</button>
+    }
+  </div>
+  @if (ok()) { <p class="etiqueta ok">{{ ok() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @switch (pestana()) {
+    @case ('productos') {
+      <section class="tarjeta">
+        <h2>Nuevo producto</h2>
+        <div class="form">
+          <label>Nombre <input [(ngModel)]="nuevo.nombre"></label>
+          <label>Precio <input type="number" [(ngModel)]="nuevo.precio"></label>
+          <label>Categoría <select [(ngModel)]="nuevo.categoriaId">@for (c of categorias(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }</select></label>
+          <label>Estación <select [(ngModel)]="nuevo.estacionId">@for (e of estaciones(); track e.id) { <option [ngValue]="e.id">{{ e.nombre }}</option> }</select></label>
+          <label>Minutos de preparación <input type="number" [(ngModel)]="nuevo.tiempoPreparacionMin"></label>
+          <label>Otros nombres (coma) <input [(ngModel)]="nuevo.sinonimos" placeholder="cola, soda"></label>
+          <label>Alérgenos (coma) <input [(ngModel)]="nuevo.alergenos" placeholder="maní, mariscos"></label>
+          <button class="primario" type="button" (click)="crearProducto()">Guardar</button>
+        </div>
+        <table>
+          <thead><tr><th>Producto</th><th>Categoría</th><th>Estación</th><th class="num">Precio</th><th>Disponibilidad</th></tr></thead>
+          <tbody>
+            @for (p of productos(); track p.id) {
+              <tr><td>{{ p.nombre }}</td><td>{{ p.categoria.nombre }}</td><td>{{ p.estacion?.nombre ?? 'Sin estación' }}</td>
+                <td class="num">{{ p.precio | moneda }}</td>
+                <td><button type="button" (click)="alternar(p)">{{ p.disponible ? 'Disponible' : 'Agotado' }}</button></td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+    @case ('mesas') {
+      <section class="tarjeta">
+        <div class="form">
+          <label>Número <input type="number" [(ngModel)]="mesaNueva.numero"></label>
+          <label>Capacidad <input type="number" [(ngModel)]="mesaNueva.capacidad"></label>
+          <button class="primario" type="button" (click)="crearMesa()">Registrar mesa</button>
+        </div>
+        <table><thead><tr><th>Mesa</th><th>Capacidad</th><th>Estado</th></tr></thead>
+          <tbody>@for (m of mesas(); track m.id) { <tr><td>{{ m.numero }}</td><td>{{ m.capacidad }}</td><td>{{ m.estado }}</td></tr> }</tbody></table>
+      </section>
+    }
+    @case ('usuarios') {
+      <section class="tarjeta">
+        <div class="form">
+          <label>Nombre completo <input [(ngModel)]="usuarioNuevo.nombre"></label>
+          <label>Usuario <input [(ngModel)]="usuarioNuevo.usuario"></label>
+          <label>Rol <select [(ngModel)]="usuarioNuevo.rol"><option>MESERO</option><option>CAJERO</option><option>ADMINISTRADOR</option></select></label>
+          <label>Contraseña inicial <input type="password" [(ngModel)]="usuarioNuevo.contrasena"></label>
+          <button class="primario" type="button" (click)="crearUsuario()">Crear usuario</button>
+        </div>
+        <table><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Activo</th></tr></thead>
+          <tbody>@for (u of usuarios(); track u.id) { <tr><td>{{ u.nombre }}</td><td>{{ u.usuario }}</td><td>{{ u.rol }}</td><td>{{ u.activo ? 'Sí' : 'No' }}</td></tr> }</tbody></table>
+      </section>
+    }
+    @case ('reservas') { <section class="tarjeta"><p class="muted">Pendiente (Jack): reservas y pedidos programados, HU-08 a HU-12.</p></section> }
+    @case ('reportes') { <section class="tarjeta"><p class="muted">Pendiente (Jack): historial de pedidos y pagos, y tiempos, HU-20 y HU-21.</p></section> }
+  }
+</div>
