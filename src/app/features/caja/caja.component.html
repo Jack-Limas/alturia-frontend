@@ -54,7 +54,7 @@
         @if (error()) { <p class="error">{{ error() }}</p> }
         <button class="primario" type="button" [disabled]="!puedeRegistrar()" (click)="registrar()">Registrar pago</button>
       </section>
-    } @else if (resultado(); as r) {
+    } @else if (resultado()) { @if (resultado(); as r) {
       <section class="tarjeta comprobante">
         <h2>Comprobante N.º {{ r.comprobante.consecutivo }}</h2>
         <p>{{ r.comprobante.fechaEmision }}</p>
@@ -64,6 +64,7 @@
         <p class="muted">{{ r.comprobante.leyenda }}</p>
         <button type="button" (click)="imprimir()">Imprimir</button>
       </section>
+    }
     } @else {
       <p class="muted">Seleccione una mesa para ver su cuenta.</p>
       @if (error()) { <p class="error">{{ error() }}</p> }
