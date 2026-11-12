@@ -1,0 +1,58 @@
+<div class="kds">
+  <header>
+    <nav>
+      @for (v of ['Cocina', 'Bar', 'Consolidado']; track v) {
+        <span class="pestana" [class.activa]="vista() === v">{{ v }}</span>
+      }
+    </nav>
+    <span>{{ vista() === 'Consolidado' ? 'Producción · ' + estacion() : pedidos().length + ' pedidos pendientes' }}</span>
+  </header>
+
+  @if (!conectado()) { <div class="banda roja">Sin conexión: no se están recibiendo pedidos nuevos</div> }
+  @if (alertaComandera()) { <div class="banda roja">{{ alertaComandera() }} — el pedido sigue en pantalla <small>(se reimprimirá solo)</small></div> }
+
+  @if (vista() === 'Consolidado') {
+    <section class="consolidado">
+      @for (c of consolidado(); track c.producto) {
+        <div class="fila-cons"><span>{{ c.producto }}</span><strong>{{ c.cantidad }}</strong></div>
+      } @empty { <p>No hay productos pendientes.</p> }
+    </section>
+  } @else {
+    <section class="cola">
+      @for (p of pedidos(); track p.id; let i = $index) {
+        <article class="pedido" [class.sel]="i === seleccion()" [class.atrasado]="p.atrasado" [class.prep]="estadoDe(p) === 'En preparación'">
+          <div class="cab">
+            <strong>Mesa {{ p.mesa }}</strong>
+            <span>{{ p.minutos }} min</span>
+          </div>
+          <div class="sub">#{{ p.id }} · {{ p.mesero }} · {{ estadoDe(p) }}
+            @if (p.modificado) { <span class="tag amarillo">MODIFICADO</span> }
+          </div>
+          @if (p.restricciones.length) {
+            @for (r of p.restricciones; track r) { <div class="alergia">⚠ {{ r }}</div> }
+          }
+          <ul>
+            @for (l of p.lineas; track l.id) {
+              <li [class.nuevo]="l.estado === 'MODIFICADA'">
+                <b>{{ l.cantidad }}×</b> {{ l.producto }}
+                @if (l.observacion) { <div class="obs">» {{ l.observacion }}</div> }
+                @if (l.alergenos.length) { <div class="alergia">⚠ Contiene {{ l.alergenos.join(', ') }}</div> }
+              </li>
+            }
+          </ul>
+          @if (p.atrasado) { <div class="atraso">Atrasado {{ p.minutos - 20 }} min</div> }
+        </article>
+      } @empty { <p class="vacio">Sin pedidos en cola</p> }
+    </section>
+  }
+
+  @if (confirmando(); as c) {
+    <div class="modal"><div>
+      <h2>Mesa {{ c.mesa }}: ¿Verificó la restricción?</h2>
+      <p>Pulse <b>+</b> para confirmar o <b>−</b> para cancelar</p>
+    </div></div>
+  }
+  @if (aviso()) { <div class="toast">{{ aviso() }}</div> }
+
+  <footer>8/2 mover · 4/6 vista · <b>Enter</b> avanzar · <b>0</b> deshacer (10 s) · <b>+/−</b> confirmar · <b>.</b> reimprimir</footer>
+</div>

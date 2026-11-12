@@ -1,0 +1,90 @@
+<app-barra titulo="Administración" />
+<div class="contenedor">
+  <div class="tabs">
+    @for (t of ['productos', 'mesas', 'usuarios', 'reservas', 'reportes']; track t) {
+      <button type="button" [class.primario]="pestana() === t" (click)="pestana.set($any(t))">{{ t[0].toUpperCase() + t.slice(1) }}</button>
+    }
+  </div>
+  @if (ok()) { <p class="etiqueta ok">{{ ok() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @switch (pestana()) {
+    @case ('productos') {
+      <section class="tarjeta">
+        <h2>Nuevo producto</h2>
+        <div class="form">
+          <label>Nombre <input [(ngModel)]="nuevo.nombre"></label>
+          <label>Precio <input type="number" [(ngModel)]="nuevo.precio"></label>
+          <label>Categoría <select [(ngModel)]="nuevo.categoriaId">@for (c of categorias(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }</select></label>
+          <label>Estación <select [(ngModel)]="nuevo.estacionId">@for (e of estaciones(); track e.id) { <option [ngValue]="e.id">{{ e.nombre }}</option> }</select></label>
+          <label>Minutos de preparación <input type="number" [(ngModel)]="nuevo.tiempoPreparacionMin"></label>
+          <label>Otros nombres (coma) <input [(ngModel)]="nuevo.sinonimos" placeholder="cola, soda"></label>
+          <label>Alérgenos (coma) <input [(ngModel)]="nuevo.alergenos" placeholder="maní, mariscos"></label>
+          <button class="primario" type="button" (click)="crearProducto()">Guardar</button>
+        </div>
+        <table>
+          <thead><tr><th>Producto</th><th>Categoría</th><th>Estación</th><th class="num">Precio</th><th>Disponibilidad</th></tr></thead>
+          <tbody>
+            @for (p of productos(); track p.id) {
+              <tr><td>{{ p.nombre }}</td><td>{{ p.categoria.nombre }}</td><td>{{ p.estacion?.nombre ?? 'Sin estación' }}</td>
+                <td class="num">{{ p.precio | moneda }}</td>
+                <td><button type="button" (click)="alternar(p)">{{ p.disponible ? 'Disponible' : 'Agotado' }}</button></td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+    @case ('mesas') {
+      <section class="tarjeta">
+        <h2>1. Zonas</h2>
+        <div class="form">
+          <label>Nombre de la zona <input [(ngModel)]="zonaNueva" placeholder="Terraza, segundo piso…"></label>
+          <button class="primario" type="button" (click)="crearZona()">Crear zona</button>
+        </div>
+        <table><thead><tr><th>Zona</th><th class="num">Mesas</th><th class="num">Capacidad (personas)</th></tr></thead>
+          <tbody>@for (z of zonas(); track z.id) { <tr><td>{{ z.nombre }}</td><td class="num">{{ z.mesas }}</td><td class="num">{{ z.capacidad }}</td></tr> }
+            @empty { <tr><td colspan="3" class="muted">Aún no hay zonas. Cree la primera para registrar mesas.</td></tr> }</tbody></table>
+      </section>
+      <section class="tarjeta">
+        <h2>2. Mesas y capacidad</h2>
+        <div class="form">
+          <label>Zona <select [(ngModel)]="mesaNueva.zonaId">@for (z of zonas(); track z.id) { <option [ngValue]="z.id">{{ z.nombre }}</option> }</select></label>
+          <label>Número <input type="number" [(ngModel)]="mesaNueva.numero"></label>
+          <label>Capacidad (personas) <input type="number" min="1" [(ngModel)]="mesaNueva.capacidad"></label>
+          <button class="primario" type="button" [disabled]="!zonas().length" (click)="crearMesa()">Registrar mesa</button>
+        </div>
+        @for (z of zonas(); track z.id) {
+          <h3>{{ z.nombre }} <small class="muted">· {{ z.mesas }} mesas · {{ z.capacidad }} personas</small></h3>
+          <table><thead><tr><th>Mesa</th><th class="num">Capacidad</th><th>Estado</th><th>Mover a</th></tr></thead>
+            <tbody>@for (m of mesasDe(z); track m.id) {
+              <tr><td>{{ m.numero }}</td><td class="num">{{ m.capacidad }}</td><td>{{ m.estado }}</td>
+                <td><select [ngModel]="m.zona?.id" (ngModelChange)="cambiarZona(m, $event)">@for (o of zonas(); track o.id) { <option [ngValue]="o.id">{{ o.nombre }}</option> }</select></td></tr>
+            } @empty { <tr><td colspan="4" class="muted">Sin mesas en esta zona.</td></tr> }</tbody></table>
+        }
+        @if (mesasSinZona().length) {
+          <h3>Sin zona</h3>
+          <table><thead><tr><th>Mesa</th><th class="num">Capacidad</th><th>Estado</th><th>Asignar a</th></tr></thead>
+            <tbody>@for (m of mesasSinZona(); track m.id) {
+              <tr><td>{{ m.numero }}</td><td class="num">{{ m.capacidad }}</td><td>{{ m.estado }}</td>
+                <td><select [ngModel]="null" (ngModelChange)="cambiarZona(m, $event)"><option [ngValue]="null" disabled>Elegir zona</option>@for (o of zonas(); track o.id) { <option [ngValue]="o.id">{{ o.nombre }}</option> }</select></td></tr>
+            }</tbody></table>
+        }
+      </section>
+    }
+    @case ('usuarios') {
+      <section class="tarjeta">
+        <div class="form">
+          <label>Nombre completo <input [(ngModel)]="usuarioNuevo.nombre"></label>
+          <label>Usuario <input [(ngModel)]="usuarioNuevo.usuario"></label>
+          <label>Rol <select [(ngModel)]="usuarioNuevo.rol"><option>MESERO</option><option>CAJERO</option><option>ADMINISTRADOR</option></select></label>
+          <label>Contraseña inicial <input type="password" [(ngModel)]="usuarioNuevo.contrasena"></label>
+          <button class="primario" type="button" (click)="crearUsuario()">Crear usuario</button>
+        </div>
+        <table><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Activo</th></tr></thead>
+          <tbody>@for (u of usuarios(); track u.id) { <tr><td>{{ u.nombre }}</td><td>{{ u.usuario }}</td><td>{{ u.rol }}</td><td>{{ u.activo ? 'Sí' : 'No' }}</td></tr> }</tbody></table>
+      </section>
+    }
+    @case ('reservas') { <section class="tarjeta"><p class="muted">Pendiente (Jack): reservas y pedidos programados, HU-08 a HU-12.</p></section> }
+    @case ('reportes') { <section class="tarjeta"><p class="muted">Pendiente (Jack): historial de pedidos y pagos, y tiempos, HU-20 y HU-21.</p></section> }
+  }
+</div>
