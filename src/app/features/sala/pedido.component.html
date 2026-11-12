@@ -1,0 +1,105 @@
+<app-barra [titulo]="'Mesa ' + numeroMesa()" />
+<div class="contenedor">
+  <div class="fila cabecera">
+    <button type="button" (click)="volver()">← Mesas</button>
+    @if (modificando(); as m) { <span class="etiqueta aviso">Modificando pedido #{{ m.id }}</span> }
+    @if (mensaje()) { <span class="etiqueta ok">{{ mensaje() }}</span> }
+  </div>
+
+  <div class="rejilla">
+    <!-- Lenguaje natural -->
+    <section class="tarjeta">
+      <h2>Pedido en lenguaje natural</h2>
+      <textarea rows="3" [(ngModel)]="frase" placeholder="Ej.: dos cuyes medianos, uno sin ají, y una cola"></textarea>
+      <div class="fila">
+        <button type="button" (click)="dictar()" [disabled]="voz.escuchando()">{{ voz.escuchando() ? 'Escuchando…' : '🎤 Dictar' }}</button>
+        <button class="primario grow" type="button" (click)="interpretar()" [disabled]="!frase.trim() || interpretando()">
+          {{ interpretando() ? 'Interpretando…' : 'Interpretar' }}
+        </button>
+      </div>
+      @if (interpretacion(); as r) {
+        <p class="muted">Modelo {{ r.modelo }} · {{ r.tiempoMs }} ms</p>
+        @for (n of r.noReconocidos; track n) { <span class="etiqueta alerta">No reconocido: {{ n }}</span> }
+      }
+      @for (m of sinAsignar(); track m) {
+        <div class="tarjeta asignar">
+          <span>¿A qué producto corresponde «{{ m }}»?</span>
+          <select #sel><option value="">Elegir…</option>
+            @for (l of lineas(); track $index) { <option [value]="$index">{{ l.producto.nombre }}</option> }
+          </select>
+          <button type="button" (click)="asignar(m, sel.value)">Asignar</button>
+        </div>
+      }
+      @if (error()) { <p class="error">{{ error() }}</p> }
+    </section>
+
+    <!-- Menú para registro manual -->
+    <section class="tarjeta">
+      <h2>Menú</h2>
+      <div class="fila">
+        <input class="grow" placeholder="Buscar producto" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)">
+        <select [ngModel]="categoria()" (ngModelChange)="categoria.set($event)">
+          @for (c of categorias(); track c) { <option [value]="c">{{ c }}</option> }
+        </select>
+      </div>
+      <div class="productos">
+        @for (p of filtrados(); track p.id) {
+          <button type="button" class="producto" [disabled]="!p.disponible" (click)="agregar(p)">
+            <strong>{{ p.nombre }}</strong>
+            <span>{{ p.precio | moneda }}</span>
+            @if (!p.disponible) { <span class="etiqueta alerta">Agotado</span> }
+          </button>
+        } @empty { <p class="muted">No se encontraron productos</p> }
+      </div>
+    </section>
+
+    <!-- Resumen editable -->
+    <section class="tarjeta resumen">
+      <h2>Resumen</h2>
+      @for (l of lineas(); track $index; let i = $index) {
+        <div class="linea" [class.verificar]="l.verificar">
+          <div class="fila">
+            <strong class="grow">{{ l.producto.nombre }}</strong>
+            <button type="button" (click)="cambiarCantidad(i, -1)">−</button><span>{{ l.cantidad }}</span>
+            <button type="button" (click)="cambiarCantidad(i, 1)">+</button>
+            <button type="button" (click)="quitar(i)" aria-label="Quitar">✕</button>
+          </div>
+          <input placeholder="Observación (sin cebolla, bien asado…)" [ngModel]="l.observacion" (ngModelChange)="observar(i, $event)">
+          @if (l.verificar) {
+            <div class="fila"><span class="etiqueta aviso">Verificar</span><button type="button" (click)="aceptar(i)">Aceptar</button></div>
+          }
+        </div>
+      } @empty { <p class="muted">Agregue productos desde el menú o con lenguaje natural.</p> }
+
+      <h3>Restricciones del cliente</h3>
+      <div class="fila">
+        <input class="grow" placeholder="Ej.: alergia al maní" [(ngModel)]="nuevaRestriccion" (keyup.enter)="agregarRestriccion()">
+        <button type="button" (click)="agregarRestriccion()">Agregar</button>
+      </div>
+      @for (r of restricciones(); track $index) {
+        <span class="etiqueta alerta" (click)="quitarRestriccion($index)">{{ r }} ✕</span>
+      }
+      @for (a of alertas(); track a) { <p class="etiqueta alerta">{{ a }}</p> }
+
+      <div class="fila total"><span>Total</span><strong>{{ total() | moneda }}</strong></div>
+      <div class="fila">
+        <button type="button" (click)="limpiar()">Limpiar</button>
+        <button class="primario grow" type="button" [disabled]="!puedeConfirmar()" (click)="confirmar()">
+          {{ modificando() ? 'Enviar modificación' : 'Confirmar y enviar a cocina' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Pedidos de la mesa -->
+    <section class="tarjeta">
+      <h2>Pedidos de la mesa</h2>
+      @for (p of pedidosMesa(); track p.id) {
+        <div class="fila linea">
+          <span class="grow">#{{ p.id }} · {{ p.lineas.length }} productos</span>
+          <span class="etiqueta">{{ p.estado }}</span>
+          @if (p.estado === 'RECIBIDO' || p.estado === 'EN_PREPARACION') { <button type="button" (click)="editar(p)">Modificar</button> }
+        </div>
+      } @empty { <p class="muted">Sin pedidos activos.</p> }
+    </section>
+  </div>
+</div>

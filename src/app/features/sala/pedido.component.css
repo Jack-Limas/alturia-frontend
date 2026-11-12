@@ -1,0 +1,11 @@
+.cabecera { margin-bottom: 1rem; }
+.rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 900px) { .rejilla { grid-template-columns: 1fr; } }
+section { display: grid; gap: .75rem; align-content: start; }
+.productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5rem; max-height: 420px; overflow: auto; }
+.producto { display: grid; gap: .2rem; text-align: left; }
+.linea { border-bottom: 1px solid var(--borde); padding: .5rem 0; display: grid; gap: .4rem; }
+.linea.verificar { background: #fff8e8; border-radius: 8px; padding: .5rem; }
+.total { justify-content: space-between; font-size: 1.3rem; padding-top: .5rem; border-top: 2px solid var(--borde); }
+.asignar { display: grid; gap: .5rem; background: #fff8e8; }
+.resumen { grid-row: span 2; }
