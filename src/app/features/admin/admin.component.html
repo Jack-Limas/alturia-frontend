@@ -36,13 +36,39 @@
     }
     @case ('mesas') {
       <section class="tarjeta">
+        <h2>1. Zonas</h2>
         <div class="form">
-          <label>Número <input type="number" [(ngModel)]="mesaNueva.numero"></label>
-          <label>Capacidad <input type="number" [(ngModel)]="mesaNueva.capacidad"></label>
-          <button class="primario" type="button" (click)="crearMesa()">Registrar mesa</button>
+          <label>Nombre de la zona <input [(ngModel)]="zonaNueva" placeholder="Terraza, segundo piso…"></label>
+          <button class="primario" type="button" (click)="crearZona()">Crear zona</button>
         </div>
-        <table><thead><tr><th>Mesa</th><th>Capacidad</th><th>Estado</th></tr></thead>
-          <tbody>@for (m of mesas(); track m.id) { <tr><td>{{ m.numero }}</td><td>{{ m.capacidad }}</td><td>{{ m.estado }}</td></tr> }</tbody></table>
+        <table><thead><tr><th>Zona</th><th class="num">Mesas</th><th class="num">Capacidad (personas)</th></tr></thead>
+          <tbody>@for (z of zonas(); track z.id) { <tr><td>{{ z.nombre }}</td><td class="num">{{ z.mesas }}</td><td class="num">{{ z.capacidad }}</td></tr> }
+            @empty { <tr><td colspan="3" class="muted">Aún no hay zonas. Cree la primera para registrar mesas.</td></tr> }</tbody></table>
+      </section>
+      <section class="tarjeta">
+        <h2>2. Mesas y capacidad</h2>
+        <div class="form">
+          <label>Zona <select [(ngModel)]="mesaNueva.zonaId">@for (z of zonas(); track z.id) { <option [ngValue]="z.id">{{ z.nombre }}</option> }</select></label>
+          <label>Número <input type="number" [(ngModel)]="mesaNueva.numero"></label>
+          <label>Capacidad (personas) <input type="number" min="1" [(ngModel)]="mesaNueva.capacidad"></label>
+          <button class="primario" type="button" [disabled]="!zonas().length" (click)="crearMesa()">Registrar mesa</button>
+        </div>
+        @for (z of zonas(); track z.id) {
+          <h3>{{ z.nombre }} <small class="muted">· {{ z.mesas }} mesas · {{ z.capacidad }} personas</small></h3>
+          <table><thead><tr><th>Mesa</th><th class="num">Capacidad</th><th>Estado</th><th>Mover a</th></tr></thead>
+            <tbody>@for (m of mesasDe(z); track m.id) {
+              <tr><td>{{ m.numero }}</td><td class="num">{{ m.capacidad }}</td><td>{{ m.estado }}</td>
+                <td><select [ngModel]="m.zona?.id" (ngModelChange)="cambiarZona(m, $event)">@for (o of zonas(); track o.id) { <option [ngValue]="o.id">{{ o.nombre }}</option> }</select></td></tr>
+            } @empty { <tr><td colspan="4" class="muted">Sin mesas en esta zona.</td></tr> }</tbody></table>
+        }
+        @if (mesasSinZona().length) {
+          <h3>Sin zona</h3>
+          <table><thead><tr><th>Mesa</th><th class="num">Capacidad</th><th>Estado</th><th>Asignar a</th></tr></thead>
+            <tbody>@for (m of mesasSinZona(); track m.id) {
+              <tr><td>{{ m.numero }}</td><td class="num">{{ m.capacidad }}</td><td>{{ m.estado }}</td>
+                <td><select [ngModel]="null" (ngModelChange)="cambiarZona(m, $event)"><option [ngValue]="null" disabled>Elegir zona</option>@for (o of zonas(); track o.id) { <option [ngValue]="o.id">{{ o.nombre }}</option> }</select></td></tr>
+            }</tbody></table>
+        }
       </section>
     }
     @case ('usuarios') {

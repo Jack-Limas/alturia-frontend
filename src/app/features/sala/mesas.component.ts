@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService, mensajeError } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
@@ -6,6 +6,8 @@ import { Aviso, Mesa, PedidoDto } from '../../core/models';
 import { OfflineQueueService } from '../../core/offline-queue.service';
 import { RealtimeService } from '../../core/realtime.service';
 import { BarraComponent } from '../../shared/barra.component';
+
+interface GrupoZona { clave: string; nombre: string; mesas: Mesa[]; capacidad: number; disponibles: number; }
 
 /** HU-07 (estado de mesas) y HU-19 (avisos de pedido listo y entrega). */
 @Component({
@@ -17,13 +19,25 @@ import { BarraComponent } from '../../shared/barra.component';
     <div class="contenedor dos">
       <section>
         <h2>Mesas</h2>
-        <div class="mesas">
-          @for (m of mesas(); track m.id) {
-            <button type="button" class="mesa" [class]="'mesa ' + m.estado" (click)="abrir(m)">
-              <strong>{{ m.numero }}</strong><small>{{ etiqueta(m.estado) }}</small><small class="muted">{{ m.capacidad }} pers.</small>
-            </button>
-          }
-        </div>
+        @if (grupos().length > 1) {
+          <div class="filtro">
+            <button type="button" [class.primario]="zonaSel() === null" (click)="zonaSel.set(null)">Todas</button>
+            @for (g of grupos(); track g.clave) {
+              <button type="button" [class.primario]="zonaSel() === g.clave" (click)="zonaSel.set(g.clave)">{{ g.nombre }}</button>
+            }
+          </div>
+        }
+        @for (g of visibles(); track g.clave) {
+          <h3 class="zona">{{ g.nombre }}
+            <small class="muted">{{ g.disponibles }}/{{ g.mesas.length }} disponibles · {{ g.capacidad }} personas</small></h3>
+          <div class="mesas">
+            @for (m of g.mesas; track m.id) {
+              <button type="button" class="mesa" [class]="'mesa ' + m.estado" (click)="abrir(m)">
+                <strong>{{ m.numero }}</strong><small>{{ etiqueta(m.estado) }}</small><small class="muted">{{ m.capacidad }} pers.</small>
+              </button>
+            }
+          </div>
+        }
       </section>
       <aside class="tarjeta">
         <h2>Avisos</h2>
@@ -42,6 +56,7 @@ import { BarraComponent } from '../../shared/barra.component';
     .mesas{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.75rem}
     .mesa{display:grid;gap:.2rem;padding:1rem;border-radius:14px;font-size:1rem;text-align:center}
     .mesa strong{font-size:1.8rem}.DISPONIBLE{background:#e3f3e8}.OCUPADA{background:#f3e4dc}.RESERVADA{background:#e1e9f7}.POR_PAGAR{background:#fff1d6}
+    .filtro{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}.zona{margin:1rem 0 .5rem;display:flex;gap:.75rem;align-items:baseline;flex-wrap:wrap}
     .aviso{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.6rem 0;border-bottom:1px solid var(--borde)}`]
 })
 export class MesasComponent implements OnInit {
@@ -54,6 +69,23 @@ export class MesasComponent implements OnInit {
   listos = signal<PedidoDto[]>([]);
   revision = signal<Aviso[]>([]);
   error = signal<string | null>(null);
+  /** Zona seleccionada en el filtro (null = todas). */
+  zonaSel = signal<string | null>(null);
+
+  /** Flujo zona → mesa → capacidad: agrupa las mesas por zona y suma la capacidad de cada una. */
+  grupos = computed<GrupoZona[]>(() => {
+    const mapa = new Map<string, GrupoZona>();
+    for (const m of this.mesas()) {
+      const clave = m.zona ? String(m.zona.id) : 'sin-zona';
+      const g = mapa.get(clave) ?? { clave, nombre: m.zona?.nombre ?? 'Sin zona', mesas: [], capacidad: 0, disponibles: 0 };
+      g.mesas.push(m);
+      g.capacidad += m.capacidad;
+      if (m.estado === 'DISPONIBLE') g.disponibles++;
+      mapa.set(clave, g);
+    }
+    return [...mapa.values()].sort((a, b) => a.clave === 'sin-zona' ? 1 : b.clave === 'sin-zona' ? -1 : a.nombre.localeCompare(b.nombre));
+  });
+  visibles = computed(() => this.grupos().filter(g => this.zonaSel() === null || g.clave === this.zonaSel()));
 
   ngOnInit(): void {
     this.cargar();
