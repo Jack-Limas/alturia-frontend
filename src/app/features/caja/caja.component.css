@@ -1,0 +1,12 @@
+.caja { display: grid; grid-template-columns: 260px 1fr; gap: 1rem; }
+@media (max-width: 800px) { .caja { grid-template-columns: 1fr; } }
+main { display: grid; gap: 1rem; align-content: start; }
+.cuenta { display: flex; justify-content: space-between; width: 100%; margin-bottom: .5rem; }
+.cuenta.sel { border-color: var(--marca); background: var(--marca-claro); }
+.total { display: flex; justify-content: space-between; font-size: 2rem; padding-top: .75rem; }
+.pago { display: grid; gap: .75rem; }
+.medios { display: flex; gap: .5rem; }
+.medios button { flex: 1; }
+.resumen { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; font-size: 1.2rem; }
+.cambio { color: var(--ok); font-size: 1.6rem; }
+.comprobante { max-width: 480px; }
