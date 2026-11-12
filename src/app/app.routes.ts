@@ -8,6 +8,8 @@ export const routes: Routes = [
   { path: 'sala/mesa/:mesaId', canActivate: [rolGuard('MESERO', 'ADMINISTRADOR')],
     loadComponent: () => import('./features/sala/pedido.component').then(m => m.PedidoComponent) },
   { path: 'kds', loadComponent: () => import('./features/kds/kds.component').then(m => m.KdsComponent) },
+  { path: 'caja', canActivate: [rolGuard('CAJERO', 'ADMINISTRADOR')],
+    loadComponent: () => import('./features/caja/caja.component').then(m => m.CajaComponent) },
   { path: 'admin', canActivate: [rolGuard('ADMINISTRADOR')],
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent) },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
